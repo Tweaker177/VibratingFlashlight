@@ -1,8 +1,7 @@
 ARCHS = arm64 arm64e
-TARGET = iphone:clang:11.2:10.0
+TARGET = iphone:clang:11.2:9.0
 DEBUG = 0
 GO_EASY_ON_ME = 1
-FINALPACKAGE = 1
 #CFLAGS = -fobjc-arc
 include $(THEOS)/makefiles/common.mk
 
@@ -14,3 +13,5 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
 	install.exec "killall -9 SpringBoard"
+SUBPROJECTS += vibratingflashlight
+include $(THEOS_MAKE_PATH)/aggregate.mk

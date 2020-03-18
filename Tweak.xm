@@ -1,96 +1,66 @@
-#import <AudioToolbox/AudioServices.h>
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#import "Tweak.h"
+#define Prefs [[NSUserDefaults alloc] initWithSuiteName:@"com.i0stweak3r.vibratingflashlight"]
+//This is used for setting and getting pref values outside of the loadPrefs() function
+//Mainly just for checking if installed from a pirate repo
 
 
-//This interface is an abbreviated version of the class dump for SBUIFlashLightController.h for iOS 13 from Limneos' website
+const CGFloat firmware =  [[UIDevice currentDevice].systemVersion floatValue];
+//used to determine which group to %init so we don't hook unneeded methods
 
-@protocol OS_dispatch_queue;
-@class AVFlashlight, NSObject, NSHashTable;
+static bool kIsSketch = NO; //kIsSketch = my way of checking if it's sketchy / shady / pirated
+static bool kEnabled = YES;
+static bool kWantsFlashlight = YES;
+static bool kWantsCCSliders = YES;
 
-@interface SBUIFlashlightController : NSObject {
-    
-    AVFlashlight* _flashlight;
-    unsigned long long _level;
-    BOOL _overheated;
-    BOOL _available;
-}
-
-//iVars are always declared first (after any  protocols, forward class declarations, and the main interface declaring the parent class), then properties, then methods used in the class
-
-@property (getter=isAvailable,nonatomic,readonly) BOOL available;                //@synthesize available=_available - In the implementation block
-@property (getter=isOverheated,nonatomic,readonly) BOOL overheated;              //@synthesize overheated=_overheated - In the implementation block
-
-//Note this only has properties to get the the values of available and overheated, as both are readonly, meaning it is set elsewhere in iOS
-//All properties are readwrite by default, unless explicitly set as readonly. So for common properties like background color that are readwrite,
-// you don't need to put the readwrite in the property declarations.
-
-@property (assign,nonatomic) unsigned long long level;
-//So the level is set with this controller- we learn that by seeing the assign, and the fact that it is readwrite. (And there is both a getter and setter method)
-//It appears to share the ability with at least one other controller due to the sharedInstance class method.
-
-+(id)sharedInstance;
--(id)init;
--(unsigned long long)level;
--(BOOL)isAvailable;
--(void)setLevel:(unsigned long long)arg1 ;
--(BOOL)isOverheated;
--(unsigned long long)_loadFlashlightLevel;
--(void)_setFlashlightLevel:(float)arg1 ;
--(void)_turnPowerOn;
--(void)_turnPowerOff;
--(void)_updateStateWithAvailable:(BOOL)arg1 level:(unsigned long long)arg2 overheated:(BOOL)arg3 ;
--(void)turnFlashlightOnForReason:(id)arg1 ;
--(void)turnFlashlightOffForReason:(id)arg1 ;
-@end
-
-
-/* 
-There's 3 different haptic feedback choices we can choose from, from low intensity to the highest. 
-I used a combo of 1520 for toggling on and setting the flashlight level, and 1521 for updating the state to get a variation of vibration patterns.
-AudioServicesPlaySystemSound(1519);  //Light
-AudioServicesPlaySystemSound(1520);  //Medium
-AudioServicesPlaySystemSound(1521);  //Heaviest
-*/
-
+/*
+ There's 3 different haptic feedback choices we can choose from, from low intensity to the highest.
+ I used a combo of 1520 for toggling on and setting the flashlight level, and 1521 for updating the state to get a variation of vibration patterns.
+ AudioServicesPlaySystemSound(1519);  //Light
+ AudioServicesPlaySystemSound(1520);  //Medium
+ AudioServicesPlaySystemSound(1521);  //Heaviest
+ */
 
 %hook SBUIFlashlightController
 -(void)_turnPowerOn {
+    if(!kEnabled || !kWantsFlashlight) { return %orig; }
     %orig;
-//Calling %orig first means it will do the original implementation first, so the level should be higher than zero.
-
-   if((self.level > 0) && (self.available)) {
-       //If level is greater then zero and the flashlight is available play medium haptic feedback pattern when toggling on.
-
-AudioServicesPlaySystemSound(1520);
-
+    //Calling %orig first means it will do the original implementation first, so the level should be higher than zero.
+    
+    if((self.level > 0) && (self.available)) {
+        //If level is greater then zero and the flashlight is available play medium haptic feedback pattern when toggling on.
+        
+        AudioServicesPlaySystemSound(1520);
+        
     }
 }
 
 -(void)_updateStateWithAvailable:(BOOL)arg1 level:(unsigned long long)arg2 overheated:(BOOL)arg3 {
-          %orig;
-          if((arg2>0) && arg1 && !arg3) {
-//This is what causes the constant vibration while pressing a level in the expanded Control Center module.
-//Note that if it becomes overheated we tell it to only use the original implementation.
- 
-              AudioServicesPlaySystemSound(1521);
-
-          }
+    if(!kEnabled || !kWantsFlashlight) { return %orig; }
+    %orig;
+    if((arg2>0) && arg1 && !arg3) {
+        //This is what causes the constant vibration while pressing a level in the expanded Control Center module.
+        //Note that if it becomes overheated we tell it to only use the original implementation.
+        
+        AudioServicesPlaySystemSound(1521);
+        
+    }
 }
 
 -(void)turnFlashlightOnForReason:(id)arg1 {
+    if(!kEnabled || !kWantsFlashlight) { return %orig; }
     %orig;
     AudioServicesPlaySystemSound(1520);
-//This ensures no matter how the flashlight is turned on, it will still toggle the haptic feedback playing the medium "sound" or vibration
+    //This ensures no matter how the flashlight is turned on, it will still toggle the haptic feedback playing the medium "sound" or vibration
 }
 
 -(void)_setFlashlightLevel:(float)arg1 {
-%orig;
-if((arg1>0) && (self.available)) {
-//By using a variation of haptic "sounds", 1520 here and 1521 for the updateState method, we get 2 different patterns while adjusting the strength of the flashlight.
-
-AudioServicesPlaySystemSound(1520);
-}
+    if(!kEnabled || !kWantsFlashlight) { return %orig; }
+    %orig;
+    if((arg1>0) && (self.available)) {
+        //By using a variation of haptic "sounds", 1520 here and 1521 for the updateState method, we get 2 different patterns while adjusting the strength of the flashlight.
+        
+        AudioServicesPlaySystemSound(1520);
+    }
 }
 %end
 
@@ -98,6 +68,124 @@ AudioServicesPlaySystemSound(1520);
 
 
 
+%group iOS11and12
+
+%hook CCUIModuleSliderView
+-(void)_handleValueChangeGestureRecognizer:(id)arg1 {
+    if(!kEnabled || !kWantsCCSliders) { return %orig; }
+    %orig;
+    AudioServicesPlaySystemSound(1521);
+}
+
+-(void)_handleValueTapGestureRecognizer:(id)arg1 {
+    if(!kEnabled || !kWantsCCSliders) { return %orig; }
+    %orig;
+    AudioServicesPlaySystemSound(1520);
+}
+
+-(void)setThrottleUpdates:(BOOL)arg1 {
+    if(!kEnabled || !kWantsCCSliders) { return %orig; }
+    %orig;
+    if(arg1) {
+        AudioServicesPlaySystemSound(1520);
+    }
+}
+%end
+
+%end // End of iOS 11 and 12 group
+
+//%group iOS13
+
+//iOS13 has some of same methods but in a different view
+%hook CCUIContinuousSliderView
+  -(void)_updateValueForPanGestureRecognizer:(id)arg1 forContinuedGesture:(BOOL)arg2 {
+       if(!kEnabled || !kWantsCCSliders) { return %orig; }
+arg2 = 1;
+%orig(arg1, arg2);
+  AudioServicesPlaySystemSound(1521);
+
+}
+
+-(void)_handleValueChangeGestureRecognizer:(id)arg1 {
+    if(!kEnabled || !kWantsCCSliders) { return %orig; }
+    %orig;
+    AudioServicesPlaySystemSound(1521);
+}
+
+
+%end 
+
+//%end 
+// end of group iOS13
+
+
+
+//Handle Prefs and Set Defaults
+//Also make it so if the bundleID is from a pirate repo it won't work
+//Note this is a very weak form of "DRM", people can still steal it a number of ways
+//The main intent is to stop people not smart enough to steal it directly and would only be able
+//to get it if it's in a pirate repo. (Which is stupid considering this is a free tweak) Sadly, I've
+//had lots of pirate repos hosting free (and paid) tweaks from my beta repo.
+//End result is YouTubers reviewing the tweak and listing the pirate repo as the source.
+// F*ck YOU HYI, Pulandres and all the others guilty of said F*ckery
+
+static void
+loadPrefs() {
+    static NSUserDefaults *prefs = [[NSUserDefaults alloc]
+                                    initWithSuiteName:@"com.i0stweak3r.vibratingflashlight"];
+    
+    kIsSketch = [prefs objectForKey:@"isSketch"] ? [prefs boolForKey:@"isSketch"] : kIsSketch;
+    
+    kEnabled =  ([[prefs objectForKey:@"enabled"] boolValue] && !kIsSketch) ? [prefs boolForKey:@"enabled"] : NO;
+
+    kWantsFlashlight = ([[prefs objectForKey:@"wantsFlashlight"] boolValue] && !kIsSketch) ? [prefs boolForKey:@"wantsFlashlight"] : NO;
+        
+    kWantsCCSliders =  ([[prefs objectForKey:@"wantsCCSliders"] boolValue] && !kIsSketch) ? [prefs boolForKey:@"wantsCCSliders"] : NO;
+
+
+}
+
+%ctor {
+    //%ctor = the constructor, which is only needed since we are using prefs with callbacks
+    //and groups with separate %init calls, which autorelease since we are using objc-arc.
+    CFNotificationCenterAddObserver(
+                                    CFNotificationCenterGetDarwinNotifyCenter(), NULL,
+                                    (CFNotificationCallback)loadPrefs,
+                                    CFSTR("com.i0stweak3r.vibratingflashlight-prefsreload"), NULL,
+                                    CFNotificationSuspensionBehaviorDeliverImmediately);
+    kIsSketch = NO;
+    
+    if((![[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/com.yourepo.i0s-tweak3r-betas.vibratingflashlight.list"]) && (![[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/com.i0stweak3r.vibratingflashlight.list"])) {
+        
+        
+        kIsSketch = YES;
+
+
+        [Prefs setBool:YES forKey:@"isSketch"];
+        [Prefs setBool:NO forKey:@"enabled"];
+    }
+    else {
+        kIsSketch = NO;
+        [Prefs setBool:NO forKey:@"isSketch"];
+    }
+    
+    loadPrefs();
+    
+    if(!kIsSketch) {
+       /* if(firmware >= 13.0) {
+        %init(iOS13);
+        
+        }
+        if(firmware < 13.0) {
+       */
+        %init(iOS11and12);
+        //}
+        /*Not sure which method was needed from group iOS11and12 but for some reason it wasn't working right when separating it from iOS13 group so I ditched the firmware groups for now.
+         */
+    
+  }  //end of checking if kIsSketch, the bool for if it's from a pirate repo
+    %init; //ungrouped init, for hooks that aren't in a group, can apply to iOS 11-13
+} //end of constructor
 
 
 
@@ -110,8 +198,7 @@ AudioServicesPlaySystemSound(1520);
 
 
 
-
-
+//This is the default commented out tutorial code that comes when starting a tweak with $THEOS/bin/nic.pl
 
 /* How to Hook with Logos
 Hooks are written with syntax similar to that of an Objective-C @implementation.
