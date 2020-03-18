@@ -9,7 +9,7 @@
 @interface SBUIFlashlightController : NSObject {
     //These are iVars
     AVFlashlight* _flashlight;
-    NSObject*<OS_dispatch_queue> _flashlightQueue;
+   // NSObject*<OS_dispatch_queue> _flashlightQueue;
     unsigned long long _level;
     NSHashTable* _observers;
     BOOL _overheated;
