@@ -3,6 +3,7 @@ TARGET = iphone:clang:11.2:9.0
 DEBUG = 0
 GO_EASY_ON_ME = 1
 #CFLAGS = -fobjc-arc
+
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = VibratingFlashlight
