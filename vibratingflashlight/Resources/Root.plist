@@ -48,7 +48,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>Enable only the vibrating flashlight, which vibrates when turning on and off, as well as continuously while adjusting the strength in the CC. (This switch isn&apos;t needed if all CC sliders switch is enabled)</string>
+			<string>Enable only the vibrating flashlight, which vibrates when turning on and off, as well as continuously while adjusting the strength in the CC.</string>
 		</dict>
 		<dict>
 			<key>PostNotification</key>
@@ -70,7 +70,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>footerText</key>
-			<string>This feature makes all the Control Center sliders vibrate; it includes the brightness and volume sliders, as well as the flashlight.</string>
+			<string>This feature makes all the Control Center sliders vibrate on iOS 11+12; on iOS 13 it focuses on the brightness and volume sliders.</string>
 		</dict>
 		<dict>
 			<key>PostNotification</key>
