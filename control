@@ -3,7 +3,7 @@ Name: VibratingFlashlight
 Depends: mobilesubstrate
 Version: 0.0.2
 Architecture: iphoneos-arm
-Description: Vibrating flashlight that uses 2 kinds of haptic feedback whenever turning the flashlight on or off, or constant buzzing while adjusting the level from the control center. If you are fond of vibrations, this tweak is for you! Also vibrates while changing  slider levels for brightness and volume.  Have fun in the darkest of places. :D Works iOS 11-13.3+ No options to configure. 
+Description: Vibrating flashlight that uses 2 kinds of haptic feedback whenever turning the flashlight on or off, or constant buzzing while adjusting the level from the control center. If you are fond of vibrations, this tweak is for you! Also vibrates while changing  slider levels for brightness and volume.  Have fun in the darkest of places. :D Works iOS 11-13.3+ 
 Maintainer: i0s_tweak3r
 Author: i0s_tweak3r
 Section: Tweaks
