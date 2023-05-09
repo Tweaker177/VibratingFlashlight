@@ -155,14 +155,14 @@ loadPrefs() {
                                     CFNotificationSuspensionBehaviorDeliverImmediately);
     kIsSketch = NO;
     
-    if((![[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/com.yourepo.i0s-tweak3r-betas.vibratingflashlight.list"]) && (![[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/com.i0stweak3r.vibratingflashlight.list"])) {
-        
+    if((![[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/com.yourepo.i0s-tweak3r-betas.vibratingflashlight.list"]) && (![[NSFileManager defaultManager] fileExistsAtPath:@"/var/lib/dpkg/info/com.i0stweak3r.vibratingflashlight.list"]) && (![[NSFileManager defaultManager] fileExistsAtPath:@"/var/jb/lib/dpkg/info/com.i0stweak3r.vibratingflashlight.list"])) {
         
         kIsSketch = YES;
 
 
         [Prefs setBool:YES forKey:@"isSketch"];
         [Prefs setBool:NO forKey:@"enabled"];
+	
     }
     else {
         kIsSketch = NO;
